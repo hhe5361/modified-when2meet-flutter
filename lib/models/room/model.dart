@@ -54,19 +54,15 @@ class VoteableDate {
     required this.day,
   });
 
-  factory VoteableDate.fromJson(Map<String, dynamic> json) {
-    return VoteableDate(
-      year: json['year'],
-      month: json['month'],
-      day: json['day'],
-    );
-  }
+  Map<String, dynamic> toJson() => {
+    'year': year,
+    'month': month,
+    'day': day,
+  };
 
-  Map<String, dynamic> toJson() {
-    return {
-      'year': year,
-      'month': month,
-      'day': day,
-    };
-  }
+  factory VoteableDate.fromJson(Map<String, dynamic> json) => VoteableDate(
+    year: json['year'] as int,
+    month: json['month'] as int,
+    day: json['day'] as int,
+  );
 }

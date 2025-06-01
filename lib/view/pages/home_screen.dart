@@ -1,61 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:my_web/core/util/app.dart';
 import 'package:my_web/view/widgets/create_room_form.dart';
-import 'package:my_web/view_model/home_view_model.dart';
-import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget{
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meet Up'),
-        centerTitle: true      
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withAlpha(26),
+              Theme.of(context).colorScheme.surface,
+            ],
+          ),
         ),
-      body: Consumer<HomeViewModel>(
-        builder: (ctx,  viewModel , child) {
-          if(viewModel.errorMessage != null){
-            WidgetsBinding.instance.addPostFrameCallback((_){
-              AppUtils.showSnackBar(ctx, viewModel.errorMessage! , err: true);
-              viewModel.clearMessages();
-            });
-          }
-          if ( viewModel.successMessage != null){
-            WidgetsBinding.instance.addPostFrameCallback((_){
-              AppUtils.showSnackBar(ctx, viewModel.successMessage!, err: false);
-              viewModel.clearMessages();
-            });
-          }
-
-          //view return
-          return SingleChildScrollView(
-            child: Center(
-              child: Container(
-                width: AppUtils.getResponsiveWidth(ctx),
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                                        const Text(
-                      'Create a new meeting room',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  Text(
+                    'Schedule Your\nPerfect Meeting',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Find the best time for everyone to meet',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Set your availability for the meeting',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 48),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(13),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 32),
-                    CreateRoomForm(),
-                  ],
-                ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: CreateRoomForm(),
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        }),
+          ),
+        ),
+      ),
     );
   }
-
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:my_web/core/theme/app_theme.dart';
 import 'package:my_web/view_model/home_view_model.dart';
 import 'package:my_web/view/routes/app_router.dart';
 
@@ -12,20 +13,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(providers: 
-    [
-      ChangeNotifierProvider(create: (_) => HomeViewModel()),
-    ],
-    child: MaterialApp.router(
-      title : "When2Meet",
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        fontFamily: 'Inter'
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+      ],
+      child: MaterialApp.router(
+        title: "When2Meet",
+        theme: AppTheme.lightTheme,
+        routerConfig: AppRouter.router,
+        debugShowCheckedModeBanner: false,
       ),
-      routerConfig: AppRouter.router,
-      debugShowCheckedModeBanner: false,
-    ),
     );
   }
 }

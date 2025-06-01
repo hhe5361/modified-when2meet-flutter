@@ -1,4 +1,4 @@
-import 'package:my_web/model/room/room_model.dart';
+import 'package:my_web/models/room/model.dart';
 
 class CreateRoomRequest {
   final String roomName;
@@ -17,15 +17,13 @@ class CreateRoomRequest {
     required this.voteableDates,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'room_name': roomName,
-      'time_region': timeRegion,
-      'start_time': startTime,
-      'end_time': endTime,
-      'is_online': isOnline,
-      'voteable_rooms': voteableDates.map((date) => date.toJson()).toList(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'room_name': roomName,
+    'time_region': timeRegion,
+    'start_time': startTime,
+    'end_time': endTime,
+    'is_online': isOnline,
+    'voteable_dates': voteableDates.map((date) => date.toJson()).toList(),
+  };
 }
 

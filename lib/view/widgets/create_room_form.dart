@@ -25,25 +25,31 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
   final TextEditingController _endTimeController = TextEditingController();
 
   List<DateTime> _selectedDates = [];
-  TimeOfDay? _selectedStartTime;
-  TimeOfDay? _selectedEndTime;
+  int? _selectedStartTime;
+  int? _selectedEndTime;
+  String _selectedTimeRegion = 'Asia/Seoul';
+  bool _isOnlineMeeting = false;
 
-  Future<void> _pickTime(BuildContext context, TextEditingController controller, Function(TimeOfDay?) onTimeSelected) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        controller.text = picked.format(context);
-        onTimeSelected(picked);
-      });
+  final List<String> _timeRegions = [
+    'Asia/Seoul',
+    'America/New_York',
+    'America/Los_Angeles',
+    'Europe/London',
+    'Europe/Paris',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Australia/Sydney'
+  ];
+
+  void _validateAndSetTime(TextEditingController controller, int? Function() getCurrentTime, void Function(int) setTime) {
+    final value = int.tryParse(controller.text);
+    if (value == null || value < 0 || value > 23) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid hour (0-23)')),
+      );
+      return;
     }
-  }
-
-  bool _isTimeAfter(TimeOfDay time1, TimeOfDay time2) {
-    return time1.hour > time2.hour || 
-           (time1.hour == time2.hour && time1.minute >= time2.minute);
+    setTime(value);
   }
 
   void _createRoom() {
@@ -63,14 +69,13 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
       return;
     }
 
-    if(_isTimeAfter(_selectedStartTime!, _selectedEndTime!)){
+    if(_selectedStartTime! >= _selectedEndTime!){
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('End time must be after start time.')),
         );
       return;
     }
 
-    //get view model instance by provider!!! listen false하면 리빌드는 안함. 
     final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
 
     final List<VoteableDate> voteableDates = _selectedDates.map((date) => 
@@ -81,35 +86,23 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
       )
     ).toList();
     
-    //Time Region 선택하는 부분도 생겨야 함 + 온라인 여부 확인하는 것도 생겨야 함. 
     homeViewModel.createRoom(
         roomName: _roomNameController.text,
-        timeRegion: 'Asia/Seoul', 
-        startTime: _selectedStartTime!.hour * 60 + _selectedStartTime!.minute, // Convert to minutes from midnight
-        endTime: _selectedEndTime!.hour * 60 + _selectedEndTime!.minute, // Convert to minutes from midnight
-        isOnline: true, 
+        timeRegion: _selectedTimeRegion,
+        startTime: _selectedStartTime! * 60,
+        endTime: _selectedEndTime! * 60,
+        isOnline: _isOnlineMeeting,
         voteableDates: voteableDates,
         onSuccess: (roomUrl) {
-          context.go('/room/$roomUrl'); 
+          context.go('/room/$roomUrl');
         },
       );
-
-    
   }
 
   void _onDatesSelected(List<DateTime> dates) {
     setState(() {
       _selectedDates = dates;
     });
-  }
-
-  @override
-  void dispose() {
-    _roomNameController.dispose();
-    _meetingDescriptionController.dispose();
-    _startTimeController.dispose();
-    _endTimeController.dispose();
-    super.dispose();
   }
 
   @override
@@ -149,6 +142,58 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
           ),
           const SizedBox(height: 24),
           const Text(
+            'Time Region',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: _selectedTimeRegion,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              items: _timeRegions.map((String region) {
+                return DropdownMenuItem<String>(
+                  value: region,
+                  child: Text(region),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedTimeRegion = newValue;
+                  });
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Checkbox(
+                value: _isOnlineMeeting,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isOnlineMeeting = value ?? false;
+                  });
+                },
+              ),
+              const Text(
+                'Online Meeting',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text(
             'Availability',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
@@ -165,23 +210,28 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Start Time',
+                      'Start Hour (0-23)',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () => _pickTime(context, _startTimeController, (time) => _selectedStartTime = time),
-                      child: AbsorbPointer(
-                        child: CustomTextField(
-                          controller: _startTimeController,
-                          labelText: 'Select start time',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select a start time';
-                            }
-                            return null;
-                          },
-                        ),
+                    CustomTextField(
+                      controller: _startTimeController,
+                      labelText: 'e.g., 9',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter start hour';
+                        }
+                        final hour = int.tryParse(value);
+                        if (hour == null || hour < 0 || hour > 23) {
+                          return 'Enter hour (0-23)';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) => _validateAndSetTime(
+                        _startTimeController,
+                        () => _selectedStartTime,
+                        (time) => setState(() => _selectedStartTime = time),
                       ),
                     ),
                   ],
@@ -193,23 +243,28 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'End Time',
+                      'End Hour (0-23)',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () => _pickTime(context, _endTimeController, (time) => _selectedEndTime = time),
-                      child: AbsorbPointer(
-                        child: CustomTextField(
-                          controller: _endTimeController,
-                          labelText: 'Select end time',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select an end time';
-                            }
-                            return null;
-                          },
-                        ),
+                    CustomTextField(
+                      controller: _endTimeController,
+                      labelText: 'e.g., 17',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter end hour';
+                        }
+                        final hour = int.tryParse(value);
+                        if (hour == null || hour < 0 || hour > 23) {
+                          return 'Enter hour (0-23)';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) => _validateAndSetTime(
+                        _endTimeController,
+                        () => _selectedEndTime,
+                        (time) => setState(() => _selectedEndTime = time),
                       ),
                     ),
                   ],
@@ -232,4 +287,14 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _roomNameController.dispose();
+    _meetingDescriptionController.dispose();
+    _startTimeController.dispose();
+    _endTimeController.dispose();
+    super.dispose();
+  }
+
 }

@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String baseUrl = "localhost:8000";
+  static const String baseUrl = "http://localhost:8080";
   static const String createRoomEndpoint = '/rooms';
   static const String loginEndpoint = '/rooms/:url/login';
   static const String getRoomInfoEndpoint = '/rooms/:url';
