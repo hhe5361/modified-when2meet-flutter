@@ -41,6 +41,32 @@ class Room {
       'is_online': isOnline,
     };
   }
+}
 
+class VoteableDate {
+  final int year;
+  final int month;
+  final int day;
 
+  VoteableDate({
+    required this.year,
+    required this.month,
+    required this.day,
+  });
+
+  factory VoteableDate.fromJson(Map<String, dynamic> json) {
+    return VoteableDate(
+      year: json['year'],
+      month: json['month'],
+      day: json['day'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'year': year,
+      'month': month,
+      'day': day,
+    };
+  }
 }

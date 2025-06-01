@@ -9,6 +9,7 @@ class AppUtils{
     );
   }
 
+  //스크린 사이즈 조절
   static double getResponsiveWidth(BuildContext ctx, {double desktopWidth = 1000, double tabletWidth = 1000}){
     final width = MediaQuery.of(ctx).size.width;
 
@@ -20,6 +21,5 @@ class AppUtils{
       return width * 0.9; //모바일에서 
     }
   }
-
 
 }
