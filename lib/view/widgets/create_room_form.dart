@@ -86,11 +86,12 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
       )
     ).toList();
     
+    
     homeViewModel.createRoom(
         roomName: _roomNameController.text,
         timeRegion: _selectedTimeRegion,
-        startTime: _selectedStartTime! * 60,
-        endTime: _selectedEndTime! * 60,
+        startTime: _selectedStartTime!,
+        endTime: _selectedEndTime!,
         isOnline: _isOnlineMeeting,
         voteableDates: voteableDates,
         onSuccess: (roomUrl) {
@@ -272,6 +273,52 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
               ),
             ],
           ),
+          if (homeViewModel.errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      homeViewModel.errorMessage!,
+                      style: TextStyle(color: Colors.red.shade700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (homeViewModel.successMessage != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      homeViewModel.successMessage!,
+                      style: TextStyle(color: Colors.green.shade700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 32),
           Align(
             alignment: Alignment.centerRight,

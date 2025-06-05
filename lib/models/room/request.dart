@@ -23,7 +23,7 @@ class CreateRoomRequest {
     'start_time': startTime,
     'end_time': endTime,
     'is_online': isOnline,
-    'voteable_dates': voteableDates.map((date) => date.toJson()).toList(),
+    'voteable_rooms': voteableDates.map((date) => date.toJson()).toList(),
   };
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_web/view_model/room_detail_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:my_web/core/theme/app_theme.dart';
 import 'package:my_web/view_model/home_view_model.dart';
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => RoomDetailViewModel()),
       ],
       child: MaterialApp.router(
         title: "When2Meet",

@@ -12,24 +12,31 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    var availableTimeList = json['available_time'] as List;
+    print('User.fromJson input: $json');
+    
+    final userData = json['User'] as Map<String, dynamic>;
+    final availableTimeList = json['AvailableTime'] as List;
+        
     List<AvailableTime> availableTimes = availableTimeList.map((i) => AvailableTime.fromJson(i)).toList();
 
-    return User(
-      id: json['id'],
-      name: json['name'],
-      timeRegion: json['time_region'],
+    final result = User(
+      id: userData['id'],
+      name: userData['name'],
+      timeRegion: userData['time_region'],
       availableTime: availableTimes,
     );
+    
+    return result;
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final result = {
       'id': id,
       'name': name,
       'time_region': timeRegion,
       'available_time': availableTime.map((e) => e.toJson()).toList(),
     };
+    return result;
   }
 }
 
@@ -45,18 +52,21 @@ class AvailableTime {
   });
 
   factory AvailableTime.fromJson(Map<String, dynamic> json) {
-    return AvailableTime(
+    print('AvailableTime.fromJson input: $json');
+    final result = AvailableTime(
       date: json['date'],
       hourStartSlot: json['hour_start_slot'],
       hourEndSlot: json['hour_end_slot'],
     );
+    return result;
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final result = {
       'date': date,
       'hour_start_slot': hourStartSlot,
       'hour_end_slot': hourEndSlot,
     };
+    return result;
   }
 }
