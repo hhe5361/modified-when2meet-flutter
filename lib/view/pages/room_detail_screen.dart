@@ -48,18 +48,30 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
       context: ctx,
       builder: (BuildContext dialogCtx) {
         return LoginDialog(
-          onLogin: (name, password) {
+          onLogin: (name, password) async {
             final SessionService session = Provider.of<SessionService>(
               context,
               listen: false,
             );
-            session.login(
-              roomUrl: widget.roomUrl,
-              name: name,
-              password: password,
-              timeRegion: TimeRegion.asiaSeoul,
-            ); //time region 부분 고쳐야함.
-            Navigator.of(dialogCtx).pop();
+            try {
+              await session.login(
+                roomUrl: widget.roomUrl,
+                name: name,
+                password: password,
+                timeRegion: TimeRegion.asiaSeoul, 
+              );
+              if (session.isLoggedIn) {
+                context.read<RoomDetailViewModel>().setSelectedTimeSlot(
+                  targetName: session.currentUser!.name,
+                );
+              }
+
+              Navigator.of(dialogCtx).pop(); 
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('로그인 실패: 아이디나 비밀번호를 확인해주세요.')),
+              );
+            }
           },
         );
       },
@@ -158,9 +170,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(
-                            0.08,
-                          ),
+                          color: Colors.purple.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(

@@ -27,14 +27,19 @@ class SessionService extends ChangeNotifier {
   }) async {
     final req = RegisterLoginRequest(
         name: name, password: password, timeRegion: timeRegion);
+  try {
     final res = await _roomRepository.registerOrLogin(req, roomUrl);
 
     jwtToken = res.jwtToken;
     currentUser = res.user;
     notifyListeners();
+  } catch (e) {
+    throw Exception('로그인 실패: ${e.toString()}');
+  }
   }
 
   void logout() {
     clear();
   }
+  
 }

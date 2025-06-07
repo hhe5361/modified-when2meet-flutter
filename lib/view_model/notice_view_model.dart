@@ -25,8 +25,9 @@ class NoticeViewModel extends ChangeNotifier {
     try {
       final res = await _roomRepository.getNotices(roomUrl);
       notices = res.contents;
+      notices.sort((a, b) => b.createdAt.compareTo(a.createdAt)); 
+
     } catch (e) {
-      // TODO: error handling
       print('Error fetching notices: $e');
     }
 

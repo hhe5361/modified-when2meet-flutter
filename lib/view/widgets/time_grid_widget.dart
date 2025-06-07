@@ -6,7 +6,7 @@ import 'package:my_web/models/user/response.dart';
 
 class TimeGridWidget extends StatefulWidget {
   final Room roomInfo;
-  final Map<String,List<HourBlock>> voteTable;
+  final Map<String, List<HourBlock>> voteTable;
   final Map<String, List<TimeSlot>> selectedTimeSlots;
   final Function(String date, int hour) onTimeSlotToggled;
   final List<String> Function(String date, int hour) getVotersForSlot;
@@ -31,31 +31,44 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
   Offset? _dragStartOffset;
   Offset? _dragCurrentOffset;
 
-  String _getDateForColumn(int columnIndex) {
-    final dateString = widget.votableDates[columnIndex];
-    return dateString;
+  late int _maxVoters;
+
+  @override
+  void initState() {
+    super.initState();
+    _maxVoters = _calculateMaxVoters();
   }
 
-  int _getHourForRow(int rowIndex) {
-    return widget.roomInfo.startTime + rowIndex;
+  int _calculateMaxVoters() {
+    int maxCount = 0;
+    for (final date in widget.votableDates) {
+      final hours = widget.voteTable[date] ?? [];
+      for (final hour in hours) {
+        final voters = widget.getVotersForSlot(date, hour.hour);
+        if (voters.length > maxCount) {
+          maxCount = voters.length;
+        }
+      }
+    }
+    return maxCount;
   }
+
+  String _getDateForColumn(int columnIndex) => widget.votableDates[columnIndex];
+
+  int _getHourForRow(int rowIndex) => widget.roomInfo.startTime + rowIndex;
 
   String _formatHour(int hour) {
     final DateTime time = DateTime(2000, 1, 1, hour);
     return DateFormat('h:mm a').format(time);
   }
 
-  int get _hoursInGrid => widget.roomInfo.endTime - widget.roomInfo.startTime + 1;
-
+  int get _hoursInGrid =>
+      widget.roomInfo.endTime - widget.roomInfo.startTime + 1;
   int get _numColumns => widget.votableDates.length;
-
   int get _numRows => _hoursInGrid;
 
-  // Determine if a cell is within the current drag selection
   bool _isCellInDragSelection(int row, int col) {
-    if (_dragStartOffset == null || _dragCurrentOffset == null) {
-      return false;
-    }
+    if (_dragStartOffset == null || _dragCurrentOffset == null) return false;
 
     final int startRow = _dragStartOffset!.dy.toInt();
     final int startCol = _dragStartOffset!.dx.toInt();
@@ -78,40 +91,24 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
     final int endRow = _dragCurrentOffset!.dy.toInt();
     final int endCol = _dragCurrentOffset!.dx.toInt();
 
-    print("Start Row: $startRow, End Row: $endRow");
-    print("Start Col: $startCol, End Col: $endCol");
-
     final int minRow = startRow < endRow ? startRow : endRow;
     final int maxRow = startRow > endRow ? startRow : endRow;
     final int minCol = startCol < endCol ? startCol : endCol;
     final int maxCol = startCol > endCol ? startCol : endCol;
 
-    // Determine if we are selecting or deselecting based on the first cell dragged
     final String initialDate = _getDateForColumn(startCol);
-    final int initialHour = _getHourForRow(startRow);
-    print("Initial Date: $initialDate");
-    print("SelectedTimeSlots for initialDate: ${widget.selectedTimeSlots[initialDate]?.map((slot) => 'TimeSlot(hour: ${slot.hour}, selected: ${slot.selected})').toList()}");
-    print("Min Col: $minCol, Max Col: $maxCol , Min Row : $minRow , Max Row : $maxRow");
-    bool initialSelectionState = widget.selectedTimeSlots[initialDate]?[startRow]?.selected ?? false;
+    bool initialSelected =
+        widget.selectedTimeSlots[initialDate]?[startRow]?.selected ?? false;
 
     for (int c = minCol; c <= maxCol; c++) {
       for (int r = minRow; r <= maxRow; r++) {
         final String date = _getDateForColumn(c);
-        final int hour = _getHourForRow(r);
-        print("$hour is the right?" );
-        if (initialSelectionState) {
-          if (widget.selectedTimeSlots[date]?[r]?.selected ?? false) {
-            widget.onTimeSlotToggled(date, r);
-          }
-        } else {
-          if (!(widget.selectedTimeSlots[date]?[r]?.selected ?? false)) {
-            widget.onTimeSlotToggled(date, r);
-      }
+        final selected = widget.selectedTimeSlots[date]?[r]?.selected ?? false;
+        if (selected == initialSelected) {
+          widget.onTimeSlotToggled(date, r);
         }
       }
     }
-    print("SelectedTimeSlots for result: ${widget.selectedTimeSlots[initialDate]?.map((slot) => 'TimeSlot(hour: ${slot.hour}, selected: ${slot.selected})').toList()}");
-
 
     setState(() {
       _dragStartOffset = null;
@@ -125,14 +122,14 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
       return const Center(child: Text('No votable dates or times available.'));
     }
 
-    final double cellHeight = 48.0;
-    final double cellWidth = 120.0; 
-    final double timeColumnWidth = 80.0; 
+    const double cellHeight = 48.0;
+    const double cellWidth = 120.0;
+    const double timeColumnWidth = 80.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate total width needed with padding
-        final double totalWidth = timeColumnWidth + (cellWidth * _numColumns) + 16.0; // Add padding
+        final double totalWidth =
+            timeColumnWidth + (cellWidth * _numColumns) + 16.0;
         final bool needsScroll = totalWidth > constraints.maxWidth;
 
         return SingleChildScrollView(
@@ -140,18 +137,18 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: SizedBox(
-              width: needsScroll ? totalWidth : constraints.maxWidth - 16.0, // Account for padding
+              width: needsScroll ? totalWidth : constraints.maxWidth - 16.0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Row (Time + Dates)
+                  // Header row
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min, // Add this
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(
                           width: timeColumnWidth,
@@ -170,9 +167,13 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
                             height: cellHeight,
                             alignment: Alignment.center,
                             child: Text(
-                              DateFormat('EEE, MMM d').format(DateTime.parse(date)),
+                              DateFormat(
+                                'EEE, MMM d',
+                              ).format(DateTime.parse(date)),
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           );
                         }),
@@ -180,7 +181,7 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Time Grid Body
+                  // Grid
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
@@ -191,81 +192,134 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
                         final hour = _getHourForRow(rowIndex);
                         return Row(
                           children: [
-                            // Time Column
+                            // Time column
                             SizedBox(
                               width: timeColumnWidth,
                               height: cellHeight,
-                              child: Center(
-                                child: Text(_formatHour(hour)),
-                              ),
+                              child: Center(child: Text(_formatHour(hour))),
                             ),
-                            // Date/Time Cells
                             ...List.generate(_numColumns, (colIndex) {
                               final date = _getDateForColumn(colIndex);
-                              final bool isSelected = widget.selectedTimeSlots[date] != null && 
-                                  rowIndex >= 0 &&
-                                  rowIndex < widget.selectedTimeSlots[date]!.length &&
-                                  widget.selectedTimeSlots[date]![rowIndex].selected;
-                              final bool isDraggingOver = _isCellInDragSelection(rowIndex, colIndex);
+                              final isSelected =
+                                  widget
+                                      .selectedTimeSlots[date]?[rowIndex]
+                                      ?.selected ??
+                                  false;
+                              final isDraggingOver = _isCellInDragSelection(
+                                rowIndex,
+                                colIndex,
+                              );
+                              final voters = widget.getVotersForSlot(
+                                date,
+                                hour,
+                              );
+                              final voteCount = voters.length;
 
-                              // Get voters for this specific slot
-                              final List<String> voters = widget.getVotersForSlot(date, hour);
+                              final double intensity =
+                                  (_maxVoters > 0)
+                                      ? voteCount / _maxVoters
+                                      : 0.0;
+                              final Color baseColor =
+                                  Theme.of(context).primaryColor;
+                              final Color fillColor =
+                                  isSelected
+                                      ? baseColor
+                                      : isDraggingOver
+                                      ? baseColor.withOpacity(0.3)
+                                      : Color.lerp(
+                                        Colors.white,
+                                        baseColor.withOpacity(0.6),
+                                        intensity,
+                                      )!;
 
                               return GestureDetector(
-                                onPanDown: widget.isLoggedIn
-                                    ? (details) {
-                                        setState(() {
-                                          _dragStartOffset = Offset(colIndex.toDouble(), rowIndex.toDouble());
-                                          _dragCurrentOffset = Offset(colIndex.toDouble(), rowIndex.toDouble());
-                                        });
-                                      }
-                                    : null,
-                                onPanUpdate: widget.isLoggedIn
-                                    ? (details) {
-                                        final RenderBox renderBox = context.findRenderObject() as RenderBox;
-                                        final localPosition = renderBox.globalToLocal(details.globalPosition);
+                                onPanDown:
+                                    widget.isLoggedIn
+                                        ? (_) => setState(() {
+                                          _dragStartOffset = Offset(
+                                            colIndex.toDouble(),
+                                            rowIndex.toDouble(),
+                                          );
+                                          _dragCurrentOffset = Offset(
+                                            colIndex.toDouble(),
+                                            rowIndex.toDouble(),
+                                          );
+                                        })
+                                        : null,
+                                onPanUpdate:
+                                    widget.isLoggedIn
+                                        ? (details) {
+                                          final renderBox =
+                                              context.findRenderObject()
+                                                  as RenderBox;
+                                          final local = renderBox.globalToLocal(
+                                            details.globalPosition,
+                                          );
+                                          final int currentCol = ((local.dx -
+                                                      timeColumnWidth) /
+                                                  cellWidth)
+                                              .floor()
+                                              .clamp(0, _numColumns - 1);
+                                          final int currentRow = (local.dy /
+                                                  cellHeight)
+                                              .floor()
+                                              .clamp(0, _numRows - 1);
 
-                                        // Calculate which cell the drag is currently over
-                                        final int currentCol = ((localPosition.dx - timeColumnWidth) / cellWidth).floor().clamp(0, _numColumns - 1);
-                                        final int currentRow = (localPosition.dy / cellHeight).floor().clamp(0, _numRows - 1);
-
-                                        if (_dragCurrentOffset?.dx.toInt() != currentCol || _dragCurrentOffset?.dy.toInt() != currentRow) {
-                                          setState(() {
-                                            _dragCurrentOffset = Offset(currentCol.toDouble(), currentRow.toDouble());
-                                          });
+                                          if (_dragCurrentOffset?.dx.toInt() !=
+                                                  currentCol ||
+                                              _dragCurrentOffset?.dy.toInt() !=
+                                                  currentRow) {
+                                            setState(() {
+                                              _dragCurrentOffset = Offset(
+                                                currentCol.toDouble(),
+                                                currentRow.toDouble(),
+                                              );
+                                            });
+                                          }
                                         }
-                                      }
-                                    : null,
-                                onPanEnd: widget.isLoggedIn ? (details) => _applyDragSelection() : null,
-                                onTap: widget.isLoggedIn
-                                    ? () {
-                                        widget.onTimeSlotToggled(date, rowIndex);
-                                      }
-                                    : null,
+                                        : null,
+                                onPanEnd:
+                                    widget.isLoggedIn
+                                        ? (_) => _applyDragSelection()
+                                        : null,
+                                onTap:
+                                    widget.isLoggedIn
+                                        ? () => widget.onTimeSlotToggled(
+                                          date,
+                                          rowIndex,
+                                        )
+                                        : null,
                                 child: MouseRegion(
-                                  cursor: widget.isLoggedIn ? SystemMouseCursors.click : SystemMouseCursors.basic,
+                                  cursor:
+                                      widget.isLoggedIn
+                                          ? SystemMouseCursors.click
+                                          : SystemMouseCursors.basic,
                                   child: Tooltip(
-                                    message: voters.isNotEmpty
-                                        ? 'Voted by: ${voters.join(', ')}'
-                                        : 'No one has voted for this slot yet.',
-                                    waitDuration: const Duration(milliseconds: 500),
+                                    message:
+                                        voters.isNotEmpty
+                                            ? 'Voted by: ${voters.join(', ')}'
+                                            : 'No one has voted for this slot yet.',
+                                    waitDuration: const Duration(
+                                      milliseconds: 500,
+                                    ),
                                     child: Container(
                                       width: cellWidth,
                                       height: cellHeight,
                                       decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? Theme.of(context).primaryColor.withAlpha(179)
-                                            : isDraggingOver
-                                                ? Theme.of(context).primaryColor.withAlpha(77)
-                                                : Colors.white,
-                                        border: Border.all(color: Colors.grey.shade200),
+                                        color: fillColor,
+                                        border: Border.all(
+                                          color: Colors.grey.shade200,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Center(
                                         child: Text(
-                                          voters.isEmpty ? '' : '${voters.length}',
+                                          voteCount > 0 ? '$voteCount' : '',
                                           style: TextStyle(
-                                            color: isSelected ? Colors.white : Colors.black,
+                                            color:
+                                                isSelected || intensity > 0.4
+                                                    ? Colors.white
+                                                    : Colors.black,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
