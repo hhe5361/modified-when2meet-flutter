@@ -106,7 +106,7 @@ class _TimeGridWidgetState extends State<TimeGridWidget> {
         } else {
           if (!(widget.selectedTimeSlots[date]?[r]?.selected ?? false)) {
             widget.onTimeSlotToggled(date, r);
-          }
+      }
         }
       }
     }

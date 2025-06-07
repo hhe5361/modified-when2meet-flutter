@@ -7,10 +7,14 @@ import 'package:my_web/models/user/model.dart';
 import 'package:my_web/models/user/request.dart';
 import 'package:my_web/models/user/response.dart';
 import 'package:my_web/repository/room_repository.dart';
+import 'package:my_web/view_model/session_service.dart';
 
 //user 분리 시켜도 될 듯 리팩토링할 때 
 class RoomDetailViewModel extends ChangeNotifier{
   final RoomRepository _roomRepository = RoomRepository(ApiClient());
+  final SessionService _session;
+
+  RoomDetailViewModel(this._session);
 
   bool _isLoading = false;
   String? _errMsg;
@@ -19,17 +23,17 @@ class RoomDetailViewModel extends ChangeNotifier{
   Room? _roomInfo;
   Map<String,List<HourBlock>>? _voteTable;
   Map<String, List<TimeSlot>>? _selectedTimeSlots;
-  User? _currentUser;
-  String? _jwtToken;
-  bool _isLoggedIn = false;
+  // User? _currentUser;
+  // String? _jwtToken;
+  // bool _isLoggedIn = false;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errMsg;
   String? get successMessage => _sucsMsg;
   Room? get roomInfo => _roomInfo;
   Map<String,List<HourBlock>>? get voteTable => _voteTable;
-  User? get currentUser => _currentUser;
-  bool get isLoggedIn => _isLoggedIn;
+  // User? get currentUser => _session.currentUser;
+  // bool get isLoggedIn => _session.isLoggedIn;
   Map<String, List<TimeSlot>>? get selectedTimeSlots => _selectedTimeSlots;
 
   Future<void> init(String roomUrl) async {
@@ -60,6 +64,8 @@ class RoomDetailViewModel extends ChangeNotifier{
     });
   }
 
+  
+
   Future<void> fetchRoomDetails(String roomUrl) async{
     setStart();
 
@@ -68,7 +74,7 @@ class RoomDetailViewModel extends ChangeNotifier{
       
       _roomInfo = res.roomInfo;
       _voteTable = res.voteTable;
-      if(!_isLoggedIn){
+      if(!_session.isLoggedIn){
         setSelectedTimeSlot();
       }
 
@@ -80,33 +86,8 @@ class RoomDetailViewModel extends ChangeNotifier{
     }
   }
 
-  Future<void> login(String roomUrl, String name, String pwd, TimeRegion timeRegion) async{
-    setStart();
-
-    try {
-      final req = RegisterLoginRequest(name: name, password: pwd, timeRegion: timeRegion);
-      final res = await _roomRepository.registerOrLogin(req, roomUrl);
-      _currentUser = res.user;
-      _jwtToken = res.jwtToken;
-      _isLoggedIn = true;
-      _sucsMsg = res.message;
-
-      for (var time in _currentUser!.availableTime){
-        for (int i = time.hourStartSlot; i < time.hourEndSlot; i++){
-          _selectedTimeSlots![time.date]![i].selected = true;
-        }
-      }
-    } catch(e) {
-      _errMsg = e.toString();
-      _isLoggedIn = false;
-
-    } finally {
-      setEnd();
-    }
-  }
-
   Future<void> voteTime(String roomUrl) async {
-    if (!_isLoggedIn || _jwtToken == null) {
+    if (!_session.isLoggedIn || _session.jwtToken == null) {
       _errMsg = "Please log in to vote.";
       notifyListeners();
       return;
@@ -116,7 +97,7 @@ class RoomDetailViewModel extends ChangeNotifier{
     try {
 
       final VoteTimeRequest req = VoteTimeRequest.fromTimeSlot(_selectedTimeSlots!);
-      await _roomRepository.voteTime(roomUrl, _jwtToken!, req);
+      await _roomRepository.voteTime(roomUrl, _session.jwtToken!, req);
 
       _sucsMsg = "Vote updated successfully!";
 
@@ -135,7 +116,7 @@ class RoomDetailViewModel extends ChangeNotifier{
   }
 
   void toggleTimeSlot(String date, int idx) { 
-      if (!_isLoggedIn) {
+      if (!_session.isLoggedIn) {
         _errMsg = "Please log in to vote.";
         notifyListeners();
         return;
@@ -155,12 +136,37 @@ class RoomDetailViewModel extends ChangeNotifier{
     notifyListeners();
   }
 
-  void logout() {
-    _currentUser = null;
-    _jwtToken = null;
-    _isLoggedIn = false;
-    _selectedTimeSlots = {};
-    notifyListeners();
-  }
+    // Future<void> login(String roomUrl, String name, String pwd, TimeRegion timeRegion) async{
+  //   setStart();
+
+  //   try {
+  //     final req = RegisterLoginRequest(name: name, password: pwd, timeRegion: timeRegion);
+  //     final res = await _roomRepository.registerOrLogin(req, roomUrl);
+  //     _session.currentUser = res.user;
+  //     _session.jwtToken = res.jwtToken;
+  //     _sucsMsg = res.message;
+
+  //     for (var time in _session.currentUser!.availableTime){
+  //       for (int i = time.hourStartSlot; i < time.hourEndSlot; i++){
+  //         _selectedTimeSlots![time.date]![i].selected = true;
+  //       }
+  //     }
+  //   } catch(e) {
+  //     _errMsg = e.toString();
+  //     _session.currentUser = null;
+  //     _session.jwtToken = null;
+
+  //   } finally {
+  //     setEnd();
+  //   }
+  // }
+
+
+  // void logout() {
+  //   _session.currentUser = null;
+  //   _session.jwtToken = null;
+  //   _selectedTimeSlots = {};
+  //   notifyListeners();
+  // }
 
 }

@@ -70,25 +70,25 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
         }
 
         if (commonUsers.isNotEmpty) {
-          if (commonUsers.length > maxPeople) {
-            maxPeople = commonUsers.length;
-            bestSlots = [
-              {
-                "date": date,
-                "startHour": start,
-                "endHour": end + 1,
-                "userCount": commonUsers.length,
-                "userNames": commonUsers,
-              }
-            ];
-          } else if (commonUsers.length == maxPeople) {
-            bestSlots.add({
+        if (commonUsers.length > maxPeople) {
+          maxPeople = commonUsers.length;
+          bestSlots = [
+            {
               "date": date,
               "startHour": start,
               "endHour": end + 1,
               "userCount": commonUsers.length,
               "userNames": commonUsers,
-            });
+            }
+          ];
+          } else if (commonUsers.length == maxPeople) {
+          bestSlots.add({
+            "date": date,
+            "startHour": start,
+            "endHour": end + 1,
+            "userCount": commonUsers.length,
+            "userNames": commonUsers,
+          });
           }
         }
 
@@ -156,11 +156,11 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
               ),
               elevation: isSelected ? 4 : 2,
               margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                     Row(
                       children: [
                         Icon(
@@ -241,7 +241,7 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
                     ),
                     const SizedBox(height: 16),
                     Divider(color: Colors.grey.shade200),
-                    const SizedBox(height: 12),
+              const SizedBox(height: 12),
                     Text(
                       "Available Participants",
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -250,8 +250,8 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
+              Wrap(
+                spacing: 8,
                       runSpacing: 8,
                       children: names.map((name) => Chip(
                         label: Text(name),
@@ -273,7 +273,7 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
                           ),
                         ),
                       )).toList(),
-                    ),
+              ),
                   ],
                 ),
               ),
@@ -281,7 +281,7 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
           }),
           if (_bestSlots.length > 1) ...[
             const SizedBox(height: 24),
-            Center(
+              Center(
               child: Column(
                 children: [
                   if (_isRandomizing)
@@ -306,9 +306,9 @@ class _MeetingRecommendationScreenState extends State<MeetingRecommendationScree
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
+            ],
+          ),
+        ),
           ],
         ],
       ),

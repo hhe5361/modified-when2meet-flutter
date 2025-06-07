@@ -1,5 +1,7 @@
 import 'package:my_web/constants/app_constants.dart';
 import 'package:my_web/core/network/api_client.dart';
+import 'package:my_web/models/notice/request.dart';
+import 'package:my_web/models/notice/response.dart';
 import 'package:my_web/models/room/request.dart';
 import 'package:my_web/models/room/response.dart';
 import 'package:my_web/models/user/model.dart';
@@ -14,9 +16,9 @@ class RoomRepository {
 
   String _getUrl(String endpoint, String url) => endpoint.replaceFirst(':url', url);
 
-  Future<T> _post<T>(String endpoint, dynamic body, T Function(Map<String, dynamic>) fromJson, {String? url}) async {
+  Future<T> _post<T>(String endpoint, dynamic body, T Function(Map<String, dynamic>) fromJson, {String? url, String? token}) async {
     final path = url != null ? _getUrl(endpoint, url) : endpoint;
-    final res = await _apiClient.post(path, body);
+    final res = await _apiClient.post(path, body, token: token);
     return fromJson(res);
   }
 
@@ -48,4 +50,10 @@ class RoomRepository {
 
   Future<Map<String, dynamic>> getResult(String url) =>
     _get(AppConstants.getResultEndpoint, (res) => res['data'], url: url);
+
+  Future<Map<String, dynamic>> createNotice(CreateNoticeRequest req, String url, String token) =>
+    _post(AppConstants.createNotice, req.toJson() , (res) => res['message'],  url: url, token: token);
+  
+  Future<NoticeResponse> getNotices(String url) =>
+    _get(AppConstants.getNotice, (res) => NoticeResponse.fromJson(res['data']), url: url);
 }

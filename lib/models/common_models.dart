@@ -1,7 +1,3 @@
-class CommonModels {
-  
-}
-
 class ErrorResponse {
   final String error;
 
