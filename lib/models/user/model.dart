@@ -11,11 +11,9 @@ class User {
     required this.availableTime,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    print('User.fromJson input: $json');
-    
-    final userData = json['User'] as Map<String, dynamic>;
-    final availableTimeList = json['AvailableTime'] as List;
+  factory User.fromJson(Map<String, dynamic> json) {    
+    final userData = json['user'] as Map<String, dynamic>;
+    final availableTimeList = json['available_time'] as List? ?? [];
         
     List<AvailableTime> availableTimes = availableTimeList.map((i) => AvailableTime.fromJson(i)).toList();
 
@@ -52,7 +50,6 @@ class AvailableTime {
   });
 
   factory AvailableTime.fromJson(Map<String, dynamic> json) {
-    print('AvailableTime.fromJson input: $json');
     final result = AvailableTime(
       date: json['date'],
       hourStartSlot: json['hour_start_slot'],
@@ -70,3 +67,4 @@ class AvailableTime {
     return result;
   }
 }
+

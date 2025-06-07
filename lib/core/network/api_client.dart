@@ -60,7 +60,7 @@ class ApiClient {
   }
 
   Future<dynamic> put(String path, dynamic body, {String? token}) async {
-    final uri = Uri.parse('${AppConstants.baseUrl}$path');
+    final uri = Uri.parse('$baseUrl$path');
     _logger.info('Making PUT request to: $uri');
     _logger.fine('Request body: ${json.encode(body)}');
 

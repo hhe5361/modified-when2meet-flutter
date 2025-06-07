@@ -19,3 +19,10 @@ class RegisterLoginResponse {
     );
   }
 }
+
+class TimeSlot {
+  final int hour;
+  bool selected;
+
+  TimeSlot({required this.hour, required this.selected});
+}

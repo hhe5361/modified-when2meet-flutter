@@ -6,7 +6,6 @@ import 'package:my_web/models/user/model.dart';
 import 'package:my_web/models/user/request.dart';
 import 'package:my_web/models/user/response.dart';
 
-//TODO : 음 .. 현재 방 상태 좀 더 간단하게 깎아서 가져오는 것도 괜찮을 듯. 
 
 class RoomRepository {
   final ApiClient _apiClient;
@@ -33,13 +32,13 @@ class RoomRepository {
   Future<RegisterLoginResponse> registerOrLogin(RegisterLoginRequest req, String url) =>
     _post(AppConstants.loginEndpoint, req.toJson(), RegisterLoginResponse.fromJson, url: url);
 
-  Future<Map<String, dynamic>> getRoomInfo(String url) =>
-    _get(AppConstants.getRoomInfoEndpoint, (res) => res['data'], url: url);
+  Future<RoomInfoResponse> getRoomInfo(String url) =>
+    _get(AppConstants.getRoomInfoEndpoint, (res) => RoomInfoResponse.fromJson(res['data']), url: url);
 
   Future<User> getUserDetail(String url, String token) =>
     _get(AppConstants.getUserDetailEndpoint, (res) => User.fromJson(res['data']['user']), url: url, token: token);
 
-  Future<void> voteTime(String url, String token, AvailableTime time) async {
+  Future<void> voteTime(String url, String token, VoteTimeRequest time) async {
     await _apiClient.put(
       _getUrl(AppConstants.voteTimeEndpoint, url),
       time.toJson(),
