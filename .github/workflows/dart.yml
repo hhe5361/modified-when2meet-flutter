@@ -36,4 +36,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/web/*"
-          target: "/var/www/planto/"
+          target: "/var/www/planto"
+        
