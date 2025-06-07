@@ -18,9 +18,9 @@ class Notice {
     return Notice(
       id: json['id'],
       userName: json['user_name'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
       content: json['content'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
     );
   }
 }

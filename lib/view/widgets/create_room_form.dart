@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_web/constants/enum/time_region.dart';
 import 'package:my_web/models/room/model.dart';
 import 'package:my_web/view/widgets/custom_button.dart';
 import 'package:my_web/view/widgets/custom_test_field.dart';
@@ -30,16 +31,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
   String _selectedTimeRegion = 'Asia/Seoul';
   bool _isOnlineMeeting = false;
 
-  final List<String> _timeRegions = [
-    'Asia/Seoul',
-    'America/New_York',
-    'America/Los_Angeles',
-    'Europe/London',
-    'Europe/Paris',
-    'Asia/Tokyo',
-    'Asia/Shanghai',
-    'Australia/Sydney'
-  ];
+final List<String> _timeRegions = TimeRegion.values.map((e) => e.value).toList();
 
   void _validateAndSetTime(TextEditingController controller, int? Function() getCurrentTime, void Function(int) setTime) {
     final value = int.tryParse(controller.text);
@@ -122,7 +114,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
           const SizedBox(height: 8),
           CustomTextField(
             controller: _roomNameController,
-            labelText: 'e.g., Project Kickoff',
+            labelText: 'eg. study room',
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter a room name';
@@ -138,7 +130,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
           const SizedBox(height: 8),
           CustomTextField(
             controller: _meetingDescriptionController,
-            labelText: 'e.g., Discuss project goals and timelines',
+            labelText: 'eg. for study',
             // Not required by API, so no validator
           ),
           const SizedBox(height: 24),
@@ -217,7 +209,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
                     const SizedBox(height: 8),
                     CustomTextField(
                       controller: _startTimeController,
-                      labelText: 'e.g., 9',
+                      labelText: 'eg. 1',
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -250,7 +242,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
                     const SizedBox(height: 8),
                     CustomTextField(
                       controller: _endTimeController,
-                      labelText: 'e.g., 17',
+                      labelText: 'eg. 23',
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -323,7 +315,7 @@ class _CreateRoomFormState extends State<CreateRoomForm> {
           Align(
             alignment: Alignment.centerRight,
             child: CustomButton(
-              text: 'Create Meeting Room',
+              text: 'Create Room',
               onPressed: _createRoom,
               isLoading: homeViewModel.isLoading,
               width: 200,

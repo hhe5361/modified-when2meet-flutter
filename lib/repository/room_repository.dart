@@ -51,7 +51,7 @@ class RoomRepository {
   Future<Map<String, dynamic>> getResult(String url) =>
     _get(AppConstants.getResultEndpoint, (res) => res['data'], url: url);
 
-  Future<Map<String, dynamic>> createNotice(CreateNoticeRequest req, String url, String token) =>
+  Future<String> createNotice(CreateNoticeRequest req, String url, String token) =>
     _post(AppConstants.createNotice, req.toJson() , (res) => res['message'],  url: url, token: token);
   
   Future<NoticeResponse> getNotices(String url) =>

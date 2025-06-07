@@ -1,100 +1,107 @@
-// import 'package:flutter/material.dart';
-// import 'package:my_web/view_model/notice_view_model.dart';
-// import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:my_web/models/user/model.dart';
+import 'package:my_web/view_model/notice_view_model.dart';
+import 'package:my_web/view_model/session_service.dart';
+import 'package:provider/provider.dart';
 
-// class NoticePanel extends StatefulWidget {
-//   const NoticePanel({super.key});
+class NoticePanel extends StatefulWidget {
+  final String roomUrl;
 
-//   @override
-//   State<NoticePanel> createState() => _NoticePanelState();
-// }
+  const NoticePanel({super.key, required this.roomUrl});
 
-// class _NoticePanelState extends State<NoticePanel> {
-//   final TextEditingController _controller = TextEditingController();
+  @override
+  State<NoticePanel> createState() => _NoticePanelState();
+}
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final vm = context.watch<NoticeViewModel>();
-//     final currentUserName = "Liam"; //Login View Model 따로 빼는게 깔끔할 것 같은데 시간 부족.. 
+class _NoticePanelState extends State<NoticePanel> {
+  final TextEditingController _controller = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<NoticeViewModel>();
+    final User? user = context.watch<SessionService>().currentUser;
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          "Notice",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        Divider(
+          color: Colors.grey.withAlpha(100), thickness: 1
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child:
+              vm.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: vm.notices.length,
+                    itemBuilder: (context, index) {
+                      final notice = vm.notices[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          title: Text(
+                            notice.userName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(notice.content),
+                          trailing: Text(
+                            DateFormat(
+                              'yyyy-MM-dd HH:mm',
+                            ).format(notice.createdAt),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+        ),
 
-//     return Column(
-//       children: [
-//         const SizedBox(height: 16),
-//         const Text("Chat", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: "Type a message",
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.send, color: Colors.blue),
+                onPressed: () {
+                  final content = _controller.text.trim();
+                  final isLoggedIn = context.read<SessionService>().isLoggedIn;
 
-//         const SizedBox(height: 8),
-//         Expanded(
-//           child: vm.isLoading
-//               ? const Center(child: CircularProgressIndicator())
-//               : ListView.builder(
-//                   padding: const EdgeInsets.symmetric(horizontal: 12),
-//                   reverse: false,
-//                   itemCount: vm.notices.length,
-//                   itemBuilder: (context, index) {
-//                     final notice = vm.notices[index];
-//                     final isMe = notice.userName == currentUserName;
+                  if (!isLoggedIn) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Login first.')),
+                    );
+                    return;
+                  }
 
-//                     return Align(
-//                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-//                       child: Container(
-//                         margin: const EdgeInsets.symmetric(vertical: 4),
-//                         padding: const EdgeInsets.all(12),
-//                         decoration: BoxDecoration(
-//                           color: isMe ? Colors.blue.shade100 : Colors.grey.shade200,
-//                           borderRadius: BorderRadius.circular(12),
-//                         ),
-//                         child: Column(
-//                           crossAxisAlignment:
-//                               isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-//                           children: [
-//                             Text(
-//                               notice.userName,
-//                               style: TextStyle(
-//                                 fontWeight: FontWeight.bold,
-//                                 color: isMe ? Colors.blue : Colors.black54,
-//                               ),
-//                             ),
-//                             const SizedBox(height: 4),
-//                             Text(notice.content),
-//                           ],
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                 ),
-//         ),
-
-//         Padding(
-//           padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-//           child: Row(
-//             children: [
-//               Expanded(
-//                 child: TextField(
-//                   controller: _controller,
-//                   decoration: InputDecoration(
-//                     hintText: "Type a message",
-//                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(24),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(width: 8),
-//               IconButton(
-//                 icon: const Icon(Icons.send, color: Colors.blue),
-//                 onPressed: () {
-//                   final content = _controller.text.trim();
-//                   if (content.isNotEmpty) {
-//                     vm.createNotice(content);
-//                     _controller.clear();
-//                   }
-//                 },
-//               )
-//             ],
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
+                  if (content.isNotEmpty) {
+                    vm.createNotice(content, widget.roomUrl);
+                    _controller.clear();
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

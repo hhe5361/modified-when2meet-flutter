@@ -12,7 +12,7 @@ import 'package:my_web/view_model/session_service.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-class RoomDetailScreen extends StatefulWidget{
+class RoomDetailScreen extends StatefulWidget {
   final String roomUrl;
 
   const RoomDetailScreen({super.key, required this.roomUrl});
@@ -21,7 +21,7 @@ class RoomDetailScreen extends StatefulWidget{
   State<RoomDetailScreen> createState() => _RoomDetailScreenState();
 }
 
-class _RoomDetailScreenState extends State<RoomDetailScreen>{
+class _RoomDetailScreenState extends State<RoomDetailScreen> {
   bool _showVotingResult = false;
 
   @override
@@ -29,8 +29,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen>{
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RoomDetailViewModel>(context,listen: false).init(widget.roomUrl);
-      Provider.of<NoticeViewModel>(context,listen: false).init(widget.roomUrl);
+      Provider.of<RoomDetailViewModel>(
+        context,
+        listen: false,
+      ).init(widget.roomUrl);
+      Provider.of<NoticeViewModel>(context, listen: false).init(widget.roomUrl);
     });
   }
 
@@ -40,17 +43,26 @@ class _RoomDetailScreenState extends State<RoomDetailScreen>{
     });
   }
 
-  void _showLoginDialog(BuildContext ctx){
-    showDialog(context: ctx, 
-    builder: (BuildContext dialogCtx){
+  void _showLoginDialog(BuildContext ctx) {
+    showDialog(
+      context: ctx,
+      builder: (BuildContext dialogCtx) {
         return LoginDialog(
           onLogin: (name, password) {
-            final SessionService session = Provider.of<SessionService>(context, listen: false);
-            session.login(roomUrl : widget.roomUrl, name : name, password:  password, timeRegion:  TimeRegion.asiaSeoul); //time region 부분 고쳐야함. 
+            final SessionService session = Provider.of<SessionService>(
+              context,
+              listen: false,
+            );
+            session.login(
+              roomUrl: widget.roomUrl,
+              name: name,
+              password: password,
+              timeRegion: TimeRegion.asiaSeoul,
+            ); //time region 부분 고쳐야함.
             Navigator.of(dialogCtx).pop();
           },
         );
-    }
+      },
     );
   }
 
@@ -74,18 +86,29 @@ class _RoomDetailScreenState extends State<RoomDetailScreen>{
                     TextButton(
                       onPressed: () {
                         viewModel.logout();
-                        context.read<RoomDetailViewModel>().setSelectedTimeSlot();
+                        context
+                            .read<RoomDetailViewModel>()
+                            .setSelectedTimeSlot();
 
-                        AppUtils.showSnackBar(context, 'Logged out successfully!');
+                        AppUtils.showSnackBar(
+                          context,
+                          'Logged out successfully!',
+                        );
                       },
-                      child: const Text('Logout', style: TextStyle(color: Colors.black)),
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ],
                 );
               } else {
                 return TextButton(
                   onPressed: () => _showLoginDialog(context),
-                  child: const Text('Login', style: TextStyle(color: Colors.black)),
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(color: Colors.black),
+                  ),
                 );
               }
             },
@@ -101,7 +124,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen>{
 
           if (viewModel.errorMessage != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              AppUtils.showSnackBar(context, viewModel!.errorMessage!, err: true);
+              AppUtils.showSnackBar(
+                context,
+                viewModel!.errorMessage!,
+                err: true,
+              );
               viewModel.clearMessages();
             });
           }
@@ -117,127 +144,161 @@ class _RoomDetailScreenState extends State<RoomDetailScreen>{
           }
 
           final screenWidth = MediaQuery.of(context).size.width;
-          final bool showChatPanel = screenWidth > 900; // Adjust breakpoint as needed
+          final bool showChatPanel = screenWidth > 900;
 
-          return Row(
-            children: [
-              Expanded(
-                flex: showChatPanel ? 3 : 1, // Main content takes more space if chat is visible
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Center(
-                    child: Container(
-                      width: AppUtils.getResponsiveWidth(context, desktopWidth: 1200, tabletWidth: 700),
-                      constraints: BoxConstraints(maxWidth: showChatPanel ? 900 : double.infinity), // Limit width for main content
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  viewModel.roomInfo!.name,
-                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: _toggleView,
-                                icon: Icon(_showVotingResult ? Icons.grid_view : Icons.analytics),
-                                label: Text(_showVotingResult ? 'Show Time Grid' : 'Show Voting Result'),
-                              ),
-                            ],
+          return Padding(
+            padding: EdgeInsets.all(10),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: showChatPanel ? 3 : 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(
+                            0.08,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Vote on the best time for "${viewModel.roomInfo!.name}"',
-                            style: const TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 32),
-                          if (_showVotingResult)
-                            const MeetingRecommendationScreen()
-                          else
-                            Consumer<SessionService> (
-                              builder: (context, session, child ){
-                              final isLoggedIn = session.isLoggedIn;
-                              return Column(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                TimeGridWidget(
-                                  roomInfo: viewModel.roomInfo!,
-                                  voteTable: viewModel.voteTable ?? {},
-                                  selectedTimeSlots: viewModel.selectedTimeSlots!,
-                                  onTimeSlotToggled: viewModel.toggleTimeSlot,
-                                  getVotersForSlot: viewModel.getVotersForSlot,
-                                  isLoggedIn: isLoggedIn,
+                                Expanded(
+                                  child: Text(
+                                    viewModel.roomInfo!.name,
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                const SizedBox(height: 32),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: CustomButton(
-                                    text: 'Vote',
-                                    onPressed: isLoggedIn
-                                        ? () => viewModel.voteTime(widget.roomUrl)
-                                        : () {},
-                                    isLoading: viewModel.isLoading,
-                                    width: 150,
-                                    height: 50,
-                                    color: isLoggedIn ? Theme.of(context).primaryColor : Colors.grey,
+                                TextButton.icon(
+                                  onPressed: _toggleView,
+                                  icon: Icon(
+                                    _showVotingResult
+                                        ? Icons.grid_view
+                                        : Icons.analytics,
+                                  ),
+                                  label: Text(
+                                    _showVotingResult
+                                        ? 'Show Time Grid'
+                                        : 'Show Voting Result',
                                   ),
                                 ),
                               ],
-                              );
-                              }
                             ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Vote on the best time for "${viewModel.roomInfo!.name}"',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
-                    ),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: SingleChildScrollView(
+                            child: Center(
+                              child: Container(
+                                width: AppUtils.getResponsiveWidth(
+                                  context,
+                                  desktopWidth: 1200,
+                                  tabletWidth: 700,
+                                ),
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      showChatPanel ? 900 : double.infinity,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 32),
+                                    if (_showVotingResult)
+                                      const MeetingRecommendationScreen()
+                                    else
+                                      Consumer<SessionService>(
+                                        builder: (context, session, child) {
+                                          final isLoggedIn = session.isLoggedIn;
+                                          return Column(
+                                            children: [
+                                              TimeGridWidget(
+                                                roomInfo: viewModel.roomInfo!,
+                                                voteTable:
+                                                    viewModel.voteTable ?? {},
+                                                selectedTimeSlots:
+                                                    viewModel
+                                                        .selectedTimeSlots!,
+                                                onTimeSlotToggled:
+                                                    viewModel.toggleTimeSlot,
+                                                getVotersForSlot:
+                                                    viewModel.getVotersForSlot,
+                                                isLoggedIn: isLoggedIn,
+                                              ),
+                                              const SizedBox(height: 32),
+                                              Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: CustomButton(
+                                                  text: 'Vote',
+                                                  onPressed:
+                                                      isLoggedIn
+                                                          ? () => viewModel
+                                                              .voteTime(
+                                                                widget.roomUrl,
+                                                              )
+                                                          : () {},
+                                                  isLoading:
+                                                      viewModel.isLoading,
+                                                  width: 150,
+                                                  height: 50,
+                                                  color:
+                                                      isLoggedIn
+                                                          ? Theme.of(
+                                                            context,
+                                                          ).primaryColor
+                                                          : Colors.grey,
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              // if (showChatPanel)
-              //   Expanded(
-              //     flex: 1,
-              //     // child: NoticePanel(),
-              //   ),
-            ],
+                VerticalDivider(
+                  color: Colors.grey.withAlpha(150), // 원하는 연한 회색
+                  thickness: 1,
+                  width: 20,
+                ),
+                if (showChatPanel)
+                  Expanded(
+                    flex: 1,
+                    child: NoticePanel(roomUrl: widget.roomUrl),
+                  ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 }
-
-
-// class RoomDetailScreen extends StatelessWidget {
-//   final String roomUrl;
-
-//   const RoomDetailScreen({
-//     super.key,
-//     required this.roomUrl,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Room Details'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Text(
-//               'Room URL: $roomUrl',
-//               style: Theme.of(context).textTheme.headlineSmall,
-//             ),
-//             const SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () => context.go('/'),
-//               child: const Text('Back to Home'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// } 
