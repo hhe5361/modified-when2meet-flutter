@@ -72,7 +72,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
       appBar: AppBar(
         title: GestureDetector(
           onTap: () => context.go('/'),
-          child: const Text('When2Meet'),
+          child: const Text('PlanWhen'),
         ),
         centerTitle: false,
         actions: [

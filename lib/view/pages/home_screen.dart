@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'Schedule Your\nPerfect Meeting',
+                    'PlanWhen',
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
                   const SizedBox(height: 16),
